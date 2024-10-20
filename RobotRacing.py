@@ -3,18 +3,20 @@ from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSenso
 from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch
+from pybricks.iodevices import XboxController 
 
 ################################################################################
-# Settings
+# Einstellungen
 ################################################################################
 
-# Steering Settings - Car-Steering or Tank-Steering
-IsCar = False
+# Roboter-Aufbau - Car-Steering oder Tank-Steering
+IsTank = False
 
-
+# Steuerungseinstellungen
+VideoGameSteering = True
 
 ################################################################################
-# Declarations
+# Deklarationen
 ################################################################################
 hub = PrimeHub()
 
@@ -22,10 +24,17 @@ hub = PrimeHub()
 
 
 ################################################################################
-# Functions
+# Funktionen
 ################################################################################
 
+def GetSteeringValues(): # Returns a Tupel of Speed and Steering
+    
+    CurrSpeed = 50 # Speed Value from -100 to 100
+    CurrSteering = 0 # Steering Value from -180 to 180
 
+    return CurrSpeed, CurrSteering
+
+def MotorControll():
 
 
 
@@ -33,9 +42,12 @@ hub = PrimeHub()
 # Main Loop
 ################################################################################
 while True:
-    # Get the Speed and Steering inputs from the user
-    
-    # Do Calculations with the values
+    # Auslesen XBOX-Controller - Erfassen von Geschwindigkeit & Lenken
+    MySteering = GetsteeringValues() # Returns a Tupel
 
-    # pass the Values to the Motor Control
-    
+    # Verarbeiten der Werte
+    MotorSpeed = MySteering[0]
+    MotorSteer = MySteering[1]
+
+    # Übergabe der Werte an die Motor-Steuerung
+    MotorControll(MotorSpeed,MotorSteer)
