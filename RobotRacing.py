@@ -131,9 +131,13 @@ while True:
         BoostActive = True
         print("started boost")
         hub.speaker.beep(900,200)
+        hub.light.blink(color=Color.CYAN,durations=[150,100])
 
     if not BoostActive:
         MotorSpeed = MotorSpeed * CapNorm
+        hub.light.on(color=Color.YELLOW)
+        if (BoostSW.time() > BoostCooldownTime*1000):
+            hub.light.blink(color=Color.GREEN,durations=[200,500])
     else:
         print(BoostSW.time())
         if BoostSW.time() < BoostmaxTime*1000:
