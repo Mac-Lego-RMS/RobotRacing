@@ -117,7 +117,7 @@ else:
     car = Car(
         steer_motor=SteeringMotor,
         drive_motors=Antrieb,
-        torque_limit=100
+        torque_limit=50
     )
     car.drive_speed(0)
     car.drive_power(0)
