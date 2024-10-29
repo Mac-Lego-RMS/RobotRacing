@@ -103,15 +103,8 @@ if IsTank:
 
 else:
     print("Car")
-    SteeringMotor = Motor(Port.A)
-
-    if MehrereAntriebsMotoren:
-        Antrieb = [
-            Motor(Port.B,Direction.COUNTERCLOCKWISE),
-            Motor(Port.C)
-        ]
-    else
-        Motor(Port.B,Direction.COUNTERCLOCKWISE)
+    SteeringMotor = Motor(Port.A,Direction.COUNTERCLOCKWISE)
+    Antrieb = Motor(Port.B,Direction.COUNTERCLOCKWISE)
 
     
     car = Car(
