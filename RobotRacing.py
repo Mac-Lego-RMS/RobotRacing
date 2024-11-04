@@ -83,11 +83,11 @@ BoostSW     = StopWatch()
 
 # Roboter-Aufbau - Car-Steering oder Tank-Steering
 IsTank = False
-MehrereAntriebsMotoren = True
+MehrereAntriebsMotoren = False
 
 # Geschwindigkeits-Einstellungen
 Max_Speed = 100         # in °/s  Maximum Speed
-CapNorm = 0.5           # in %    used for Boost-Function
+CapNorm = 0.75           # in %    used for Boost-Function
 BoostmaxTime = 2        # in Sec  states how long the boost is available for
 BoostCooldownTime = 6   # in Sec  Cooldown time for boost function
 
@@ -116,13 +116,13 @@ else:
             Motor(Port.B,Direction.COUNTERCLOCKWISE),
             Motor(Port.C)
         ]
-    else
-        Antrieb = Motor(Port.B,Direction.COUNTERCLOCKWISE)
+    else:
+        Antrieb = Motor(Port.B, Direction.COUNTERCLOCKWISE)
 
     car = Car(
         steer_motor  = SteeringMotor,
         drive_motors = Antrieb,
-        torque_limit = 30
+        torque_limit = 70 # wenn der Wert zu niedrig ist, werden die harten Limits der Lenkung nicht erkannt
     )
     car.drive_speed(0)
     car.drive_power(0)
@@ -158,8 +158,8 @@ def translate(value, leftMin, leftMax, rightMin, rightMax): # "map"-function
     return rightMin + (valueScaled * rightSpan)
 
 def Calculate_Boost(SpeedIN):
-    global Pressed, boostready, BoostSW, BoostCooldownTime #needs to be checked
-
+    global Pressed, BoostActive, boostready, BoostSW, BoostCooldownTime
+    ReturnSpeed = 0
     if (not BoostActive) and (Button.LB in Pressed) and (BoostSW.time() > BoostCooldownTime*1000):
         BoostSW.reset()
         BoostActive = True
@@ -174,7 +174,7 @@ def Calculate_Boost(SpeedIN):
         )
 
     if not BoostActive:
-        SpeedIN = SpeedIN * CapNorm
+        ReturnSpeed = SpeedIN * CapNorm
         if (BoostSW.time() > BoostCooldownTime*1000):
             hub.light.blink(color=Color.GREEN,durations=[200,500])
             hub.display.icon(Boost_icon)
@@ -189,7 +189,7 @@ def Calculate_Boost(SpeedIN):
     else:
         print(BoostSW.time())
         if BoostSW.time() < BoostmaxTime*1000:
-            MotorSpeed=MotorSpeed
+            ReturnSpeed=MotorSpeed
         else:
             BoostActive = False
             print("boost over")
@@ -198,7 +198,7 @@ def Calculate_Boost(SpeedIN):
             hub.display.icon(Go_icon)
             boostready = False
 
-    return int(MotorSpeed)
+    return int(ReturnSpeed)
     
 
 def MotorControl(MySpeed,MySteer):
@@ -230,7 +230,7 @@ while True:
     MotorSteer = Control_Values[1] * -1 # -100% bis 100%
 
     # Boost verarbeiten und Geschwindigkeit anpassen
-    MotorSpeed = Calculate_Boost(MotorSpeed)
+    MotorSpeed = int(translate(Calculate_Boost(MotorSpeed),-1000,1000,-100,100))
 
     # Wenn zu wenig gelenkt wird, soll der Lenk-Motor ausgeschaltet werden.
     if abs(MotorSteer) < 10:
@@ -238,7 +238,7 @@ while True:
         if not IsTank:
             SteeringMotor.stop
     else:
-        MotorSteer = int(translate(MotorSteer,-100,100,-300,300))
+        MotorSteer = MotorSteer #int(translate(MotorSteer,-100,100,-360,360))
 
     print("Speed:","{: 05d}".format(MotorSpeed),"Steering:","{: 04d}".format(MotorSteer),"   ",BoostSW.time())
     
@@ -247,7 +247,6 @@ while True:
 
     # Ausschalten über XBOX-Button
     if Button.GUIDE in Pressed:
-        XboxController = None # Entdeklarieren des XBOX-Controllers
         raise SystemExit
 
     wait(10)
