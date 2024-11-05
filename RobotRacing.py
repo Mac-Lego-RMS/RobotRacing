@@ -8,12 +8,39 @@ from pybricks.geometry import Matrix
 
 
 '''
- Vorgehen:
+ Vorgehen zur Nutzung:
 1. Programm herunterladen und Programm starten
 2. XBOX-Controller starten und pairing-starten
 3. Spike sollte sich jetzt automatisch verbinden und das Programm starten
 Danach verbindet sich der XBOX-Controller automatisch bei Programmstart
 '''
+
+################################################################################
+# Anpassungen vornehmen
+################################################################################
+'''
+Um die Autos am besten nutzen zu können, müssen evtl. einige Parameter eingestellt werden:
+1) Motoren:
+    Welche Motoren habe ich? --> SteeringMotor & Antrieb
+    2 oder 1 Antriebsmotoren --> MehrereAntriebsMotoren
+2) Lenkung einstellen
+    Drehmoment_Limits_finden einstellen (0-100)
+    Zu gering: Roboter findet Lenkbereich nicht bzw. ist zu klein
+    Zu hoch: Roboter droht, sich auf Dauer zu beschädigen
+3) Geschwindigkeit & Boost Einstellen
+'''
+
+# Geschwindigkeits- & Boost-Einstellungen
+Max_Speed = 100         # in %    Maximum Speed
+CapNorm = 0.75          # in %    used for Boost-Function
+BoostmaxTime = 2        # in Sec  states how long the boost is available for
+BoostCooldownTime = 6   # in Sec  Cooldown time for boost function
+
+# Roboter-Aufbau
+IsTank = False #Car-Steering oder Tank-Steering
+MehrereAntriebsMotoren = False 
+Drehmoment_Limits_finden = 70 # Wie hart soll der Motor gegen die Endpunkte fahren, um die Limits seiner Steuerung zu finden?
+
 ################################################################################
 # restliche Deklarationen
 ################################################################################
@@ -75,22 +102,9 @@ BoostActive = False
 boostready  = False
 BoostSW     = StopWatch()
 
-
 ################################################################################
 # Steuerung
 ################################################################################
-
-
-# Roboter-Aufbau - Car-Steering oder Tank-Steering
-IsTank = False
-MehrereAntriebsMotoren = False
-
-# Geschwindigkeits-Einstellungen
-Max_Speed = 100         # in °/s  Maximum Speed
-CapNorm = 0.75           # in %    used for Boost-Function
-BoostmaxTime = 2        # in Sec  states how long the boost is available for
-BoostCooldownTime = 6   # in Sec  Cooldown time for boost function
-
 
 if IsTank:
     print("Tank")
@@ -122,7 +136,7 @@ else:
     car = Car(
         steer_motor  = SteeringMotor,
         drive_motors = Antrieb,
-        torque_limit = 70 # wenn der Wert zu niedrig ist, werden die harten Limits der Lenkung nicht erkannt
+        torque_limit = Drehmoment_Limits_finden # wenn der Wert zu niedrig ist, werden die harten Limits der Lenkung nicht erkannt
     )
     car.drive_speed(0)
     car.drive_power(0)
@@ -226,19 +240,17 @@ while True:
     Control_Values = GetSteeringValues() # Returns a Tupel of Speed and Steering
 
     # Verarbeiten der Werte
-    MotorSpeed = Control_Values[0] * 10 # -1000 bis 1000
+    MotorSpeed = Control_Values[0]      # -100% bis 100%
     MotorSteer = Control_Values[1] * -1 # -100% bis 100%
 
     # Boost verarbeiten und Geschwindigkeit anpassen
-    MotorSpeed = int(translate(Calculate_Boost(MotorSpeed),-1000,1000,-100,100))
+    MotorSpeed = int(Calculate_Boost(MotorSpeed))
 
     # Wenn zu wenig gelenkt wird, soll der Lenk-Motor ausgeschaltet werden.
     if abs(MotorSteer) < 10:
         MotorSteer=0
         if not IsTank:
             SteeringMotor.stop
-    else:
-        MotorSteer = MotorSteer #int(translate(MotorSteer,-100,100,-360,360))
 
     print("Speed:","{: 05d}".format(MotorSpeed),"Steering:","{: 04d}".format(MotorSteer),"   ",BoostSW.time())
     
